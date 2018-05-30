@@ -115,23 +115,23 @@ void fwiPropagator::propagateForward(fwiModel &_currentModel, fwiShot &_shot, bo
                     txx(ix, iz) = taper(ix, iz) *
                                   (txx(ix, iz) +
                                    _currentModel.get_dt() *
-                                   (_currentModel.lm(ix, iz) * (
+                                   (_currentModel.c11(ix, iz) * (
                                            coeff1 * (vx(ix + 1, iz) - vx(ix, iz)) +
                                            coeff2 * (vx(ix - 1, iz) - vx(ix + 2, iz))) / dx +
-                                    _currentModel.la(ix, iz) * (
+                                    _currentModel.c13(ix, iz) * (
                                             coeff1 * (vz(ix, iz) - (iz > 0 ? vz(ix, iz - 1) : 0)) +
                                             coeff2 * ((iz > 1 ? vz(ix, iz - 2) : 0) - vz(ix, iz + 1))) / dz));
                     tzz(ix, iz) = taper(ix, iz) *
                                   (tzz(ix, iz) +
                                    _currentModel.get_dt() *
-                                   (_currentModel.la(ix, iz) * (
+                                   (_currentModel.c13(ix, iz) * (
                                            coeff1 * (vx(ix + 1, iz) - vx(ix, iz)) +
                                            coeff2 * (vx(ix - 1, iz) - vx(ix + 2, iz))) / dx +
-                                    (_currentModel.lm(ix, iz)) * (
+                                    (_currentModel.c33(ix, iz)) * (
                                             coeff1 * (vz(ix, iz) - (iz > 0 ? vz(ix, iz - 1) : 0)) +
                                             coeff2 * ((iz > 1 ? vz(ix, iz - 2) : 0) - vz(ix, iz + 1))) / dz));
                     txz(ix, iz) = taper(ix, iz) *
-                                  (txz(ix, iz) + _currentModel.get_dt() * _currentModel.mu(ix, iz) * (
+                                  (txz(ix, iz) + _currentModel.get_dt() * _currentModel.c55(ix, iz) * (
                                           (coeff1 * (vx(ix, iz + 1) - vx(ix, iz)) +
                                            coeff2 * ((iz > 0 ? vx(ix, iz - 1) : 0) - vx(ix, iz + 2))) / dz +
                                           (coeff1 * (vz(ix, iz) - vz(ix - 1, iz)) +
@@ -227,7 +227,7 @@ void fwiPropagator::propagateForward(fwiModel &_currentModel, fwiShot &_shot, bo
 
         if (exportSnapshots and std::find(snapshotLocations.begin(), snapshotLocations.end(), it) != snapshotLocations.end()) {
             std::cout << "Saving snapshot: " << it << std::endl;
-            std::string filename = "snapshot" + std::to_string(it) ;
+            std::string filename = "snapshot" + std::to_string(it);
             vx.save(filename + "_vx.txt", raw_ascii);
             vz.save(filename + "_vz.txt", raw_ascii);
         }
@@ -300,37 +300,37 @@ void fwiPropagator::propagateAdjoint(fwiModel &_currentModel, fwiShot &_shot, ma
             // Compute strain
             mat exxAdj = (txx(_currentModel.interiorX, _currentModel.interiorZ) -
                           (tzz(_currentModel.interiorX, _currentModel.interiorZ) %
-                           _currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                          _currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ)) /
-                         (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ) -
-                          (square(_currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                           (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ))));
+                           _currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                          _currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ)) /
+                         (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ) -
+                          (square(_currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                           (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ))));
             mat ezzAdj = (tzz(_currentModel.interiorX, _currentModel.interiorZ) -
                           (txx(_currentModel.interiorX, _currentModel.interiorZ) %
-                           _currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                          _currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ)) /
-                         (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ) -
-                          (square(_currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                           (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ))));
+                           _currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                          _currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ)) /
+                         (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ) -
+                          (square(_currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                           (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ))));
             mat exzAdj = txz(_currentModel.interiorX, _currentModel.interiorZ) /
-                         (2 * _currentModel.mu(_currentModel.interiorX, _currentModel.interiorZ));
+                         (2 * _currentModel.c55(_currentModel.interiorX, _currentModel.interiorZ));
 
             mat exx = (_shot.txxSnapshots.slice(it / _shot.snapshotInterval) -
                        (_shot.tzzSnapshots.slice(it / _shot.snapshotInterval) %
-                        _currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                       _currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ)) /
-                      (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ) -
-                       (square(_currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                        (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ))));
+                        _currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                       _currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ)) /
+                      (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ) -
+                       (square(_currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                        (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ))));
             mat ezz = (_shot.tzzSnapshots.slice(it / _shot.snapshotInterval) -
                        (_shot.txxSnapshots.slice(it / _shot.snapshotInterval) %
-                        _currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                       _currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ)) /
-                      (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ) -
-                       (square(_currentModel.la(_currentModel.interiorX, _currentModel.interiorZ)) /
-                        (_currentModel.lm(_currentModel.interiorX, _currentModel.interiorZ))));
+                        _currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                       _currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ)) /
+                      (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ) -
+                       (square(_currentModel.c13(_currentModel.interiorX, _currentModel.interiorZ)) /
+                        (_currentModel.c11(_currentModel.interiorX, _currentModel.interiorZ))));
             mat exz = _shot.txzSnapshots.slice(it / _shot.snapshotInterval) /
-                      (2 * _currentModel.mu(_currentModel.interiorX, _currentModel.interiorZ));
+                      (2 * _currentModel.c55(_currentModel.interiorX, _currentModel.interiorZ));
 
             _lambdaKernel += _shot.snapshotInterval * _currentModel.get_dt() * ((exx + ezz) % (exxAdj + ezzAdj));
             _muKernel += _shot.snapshotInterval * _currentModel.get_dt() * 2 *
@@ -346,23 +346,23 @@ void fwiPropagator::propagateAdjoint(fwiModel &_currentModel, fwiShot &_shot, ma
                     txx(ix, iz) = taper(ix, iz) *
                                   (txx(ix, iz) -
                                    _currentModel.get_dt() *
-                                   (_currentModel.lm(ix, iz) * (
+                                   (_currentModel.c11(ix, iz) * (
                                            coeff1 * (vx(ix + 1, iz) - vx(ix, iz)) +
                                            coeff2 * (vx(ix - 1, iz) - vx(ix + 2, iz))) / dx +
-                                    _currentModel.la(ix, iz) * (
+                                    _currentModel.c13(ix, iz) * (
                                             coeff1 * (vz(ix, iz) - (iz > 0 ? vz(ix, iz - 1) : 0)) +
                                             coeff2 * ((iz > 1 ? vz(ix, iz - 2) : 0) - vz(ix, iz + 1))) / dz));
                     tzz(ix, iz) = taper(ix, iz) *
                                   (tzz(ix, iz) -
                                    _currentModel.get_dt() *
-                                   (_currentModel.la(ix, iz) * (
+                                   (_currentModel.c13(ix, iz) * (
                                            coeff1 * (vx(ix + 1, iz) - vx(ix, iz)) +
                                            coeff2 * (vx(ix - 1, iz) - vx(ix + 2, iz))) / dx +
-                                    (_currentModel.lm(ix, iz)) * (
+                                    (_currentModel.c11(ix, iz)) * (
                                             coeff1 * (vz(ix, iz) - (iz > 0 ? vz(ix, iz - 1) : 0)) +
                                             coeff2 * ((iz > 1 ? vz(ix, iz - 2) : 0) - vz(ix, iz + 1))) / dz));
                     txz(ix, iz) = taper(ix, iz) *
-                                  (txz(ix, iz) - _currentModel.get_dt() * _currentModel.mu(ix, iz) * (
+                                  (txz(ix, iz) - _currentModel.get_dt() * _currentModel.c55(ix, iz) * (
                                           (coeff1 * (vx(ix, iz + 1) - vx(ix, iz)) +
                                            coeff2 * ((iz > 0 ? vx(ix, iz - 1) : 0) - vx(ix, iz + 2))) / dz +
                                           (coeff1 * (vz(ix, iz) - vz(ix - 1, iz)) +

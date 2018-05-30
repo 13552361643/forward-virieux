@@ -14,15 +14,17 @@ public:
     double dz = 1.249;
     arma::uword nx_interior = 100;
     arma::uword nz_interior = 100;
-    arma::uword np_boundary = 25;
+    arma::uword np_boundary = 50;
     double np_factor = 0.0075;
     arma::uword nx = nx_interior + 2 * np_boundary;
     arma::uword nz = nz_interior + np_boundary;
 
     // Static simulation fields
-    arma::mat la = arma::mat(nx, nz);
-    arma::mat mu = arma::mat(nx, nz);
-    arma::mat lm = arma::mat(nx, nz);
+    arma::mat c13 = arma::mat(nx, nz);
+    arma::mat c11 = arma::mat(nx, nz);
+    arma::mat c33 = arma::mat(nx, nz);
+    arma::mat c55 = arma::mat(nx, nz);
+
     arma::mat b_vx = arma::mat(nx, nz);
     arma::mat de = arma::mat(nx, nz);
     arma::mat b_vz = arma::mat(nx, nz); // TODO consolidate this into single gridpoint?

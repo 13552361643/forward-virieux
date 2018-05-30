@@ -17,9 +17,10 @@ void fwiModel::updateFields(mat &_density, mat &_lambda, mat &_mu) {
     de = _density;
     b_vx = 1.0 / _density;
     b_vz = b_vx;
-    la = _lambda;
-    mu = _mu;
-    lm = _lambda + 2 * _mu;
+
+    c13 = _lambda;
+    c55 = _mu;
+    c11 = _lambda + 2 * _mu;
 }
 
 void fwiModel::updateInnerFieldsElastic(mat &_density, mat &_lambda, mat &_mu) {
@@ -36,12 +37,12 @@ void fwiModel::updateInnerFieldsElastic(mat &_density, mat &_lambda, mat &_mu) {
     de = _density;
     extendFields(de);
 
-    la(interiorX, interiorZ) = _lambda;
-    mu(interiorX, interiorZ) = _mu;
-    extendFields(la);
-    extendFields(mu);
+    c13(interiorX, interiorZ) = _lambda;
+    c55(interiorX, interiorZ) = _mu;
+    extendFields(c13);
+    extendFields(c55);
 
-    lm = la + 2 * mu;
+    c11 = c13 + 2 * c55;
 
     calculateVelocityFields();
 
@@ -69,7 +70,7 @@ void fwiModel::updateInnerFieldsVelocity(mat &_density, mat &_vp, mat &_vs) {
 }
 
 void fwiModel::setTimestepAuto(double _targetCourant) {
-    dt = _targetCourant * dx / (static_cast<double>(sqrt(lm.max() * b_vx.max())) * static_cast<double>(sqrt(2.0)));
+    dt = _targetCourant * dx / (static_cast<double>(sqrt(c11.max() * b_vx.max())) * static_cast<double>(sqrt(2.0)));
     nt = static_cast<int>(ceil(samplingTime / dt));
 }
 
@@ -77,7 +78,7 @@ void fwiModel::setTimestep(double _dt) {
     dt = _dt;
     nt = static_cast<int>(ceil(samplingTime / dt));
 
-    if ((dt * (static_cast<double>(sqrt(lm.max() * b_vx.max())) * static_cast<double>(sqrt(2.0))) / dx) >= 1) {
+    if ((dt * (static_cast<double>(sqrt(c11.max() * b_vx.max())) * static_cast<double>(sqrt(2.0))) / dx) >= 1) {
         std::cout << "Courant criterion is NOT met!" << std::endl;
     }
 }
@@ -87,7 +88,7 @@ void fwiModel::setTime(double _dt, int _nt, double _t) {
     nt = _nt;
     samplingTime = _t;
 
-    if ((dt * (static_cast<double>(sqrt(lm.max() * b_vx.max())) * static_cast<double>(sqrt(2.0))) / dx) >= 1) {
+    if ((dt * (static_cast<double>(sqrt(c11.max() * b_vx.max())) * static_cast<double>(sqrt(2.0))) / dx) >= 1) {
         std::cout << "Courant criterion is NOT met!" << std::endl;
     }
 }
@@ -123,22 +124,24 @@ fwiModel::fwiModel() {
     b_vx = arma::ones(nx, nz);
     de = arma::ones(nx, nz);
     b_vz = arma::ones(nx, nz);
-    la = arma::ones(nx, nz);
-    mu = arma::ones(nx, nz);
-    lm = arma::ones(nx, nz);
+    c13 = arma::ones(nx, nz);
+    c55 = arma::ones(nx, nz);
+    c11 = arma::ones(nx, nz);
+    c33 = arma::ones(nx, nz);
 }
 
 void fwiModel::calculateVelocityFields() {
     // TODO evaluate validity in staggered grid
-    vp = sqrt((la + 2 * mu) % b_vx);
-    vs = sqrt(mu % b_vx);
+    vp = sqrt((c13 + 2 * c55) % b_vx);
+    vs = sqrt(c55 % b_vx);
 }
 
 void fwiModel::calculateElasticFields() {
     // TODO evaluate validity in staggered grid
-    mu = square(vs) / b_vx;
-    lm = square(vp) / b_vx;
-    la = lm - 2 * mu;
+    c55 = square(vs) / b_vx;
+    c11 = square(vp) / b_vx;
+    c13 = c11 - 2 * c55;
+    c33 = 1.5 * c11;
 }
 
 double fwiModel::get_dt() {
