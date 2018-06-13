@@ -13,6 +13,7 @@ class fwiExperiment {
     // Class which contains the basic elements of a full waveform experiment. Contains all the basic functions for FWI, which are delegated to shots
     // and receiver. Also contains the model object and other simulation parameters. Can be used for synthetics as well as inversion.
 public:
+
     // Fields
     arma::imat receivers; // Indexes on the numerical grid for receivers
     arma::imat sources; // Indexes on the numerical grid for sources
@@ -37,8 +38,21 @@ public:
     arma::mat vsKernel_par2; // S-wave velocity uhhhhkernel for free parameters rho, vp, vs
 
     // Constructors
-    fwiExperiment(arma::imat _receivers, arma::imat _sources, arma::vec _sourceFunction, double samplingTime, double samplingTimestep,
-                  int samplingAmount); // Standard constructor supplying all necessary info
+    fwiExperiment(arma::imat _receivers, arma::imat _sources, arma::vec _sourceFunction, double samplingTimestep, int samplingAmount,
+                  fwiShot::SourceTypes sourceType); // Standard constructor supplying all necessary info
+
+    fwiExperiment(double dx,
+                  double dz,
+                  arma::uword nx_interior,
+                  arma::uword nz_interior,
+                  arma::uword np_boundary,
+                  double np_factor,
+                  arma::imat _receivers,
+                  arma::imat _sources,
+                  arma::vec _sourceFunction,
+                  double samplingTimestep,
+                  int samplingAmount,
+                  fwiShot::SourceTypes sourceType); // Standard constructor supplying all necessary info, but with variable size
 
     fwiExperiment(); // Default constructor
 
@@ -66,6 +80,8 @@ private:
     void backwardAdjoint(); // Back propagateLeapFrog the adjoint sources to compute kernels
 
     void mapKernels();
+
+    bool useRamSnapshots = false;
 };
 
 

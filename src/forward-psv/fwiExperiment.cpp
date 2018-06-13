@@ -9,13 +9,40 @@
 using namespace arma;
 
 // Constructor
-fwiExperiment::fwiExperiment(imat _receivers, imat _sources, vec _sourceFunction, double _samplingTime, double _samplingTimestep,
-                             int _samplingAmount) {
+
+fwiExperiment::fwiExperiment(double _dx,
+                             double _dz,
+                             arma::uword _nx_interior,
+                             arma::uword _nz_interior,
+                             arma::uword _np_boundary,
+                             double _np_factor,
+                             arma::imat _receivers,
+                             arma::imat _sources,
+                             arma::vec _sourceFunction,
+                             double _samplingTimestep,
+                             int _samplingAmount,
+                             fwiShot::SourceTypes _sourceType) :
+        fwiExperiment(_receivers,
+                      _sources,
+                      _sourceFunction,
+                      _samplingTimestep,
+                      _samplingAmount,
+                      _sourceType) {
+    model = fwiModel(_dx, _dz, _nx_interior, _nz_interior, _np_boundary, _np_factor);
+    model.setTime(samplingTimestep, samplingAmount, samplingTime);
+}
+
+fwiExperiment::fwiExperiment(imat _receivers,
+                             imat _sources,
+                             vec _sourceFunction,
+                             double _samplingTimestep,
+                             int _samplingAmount,
+                             fwiShot::SourceTypes _sourceType) {
     // Create a fwiExperiment
     receivers = std::move(_receivers);
     sources = std::move(_sources);
     sourceFunction = std::move(_sourceFunction);
-    samplingTime = _samplingTime;
+    samplingTime = _samplingTimestep * _samplingAmount;
     samplingTimestep = _samplingTimestep;
     samplingAmount = _samplingAmount;
     model.setTime(samplingTimestep, samplingAmount, samplingTime);
@@ -39,11 +66,12 @@ fwiExperiment::fwiExperiment(imat _receivers, imat _sources, vec _sourceFunction
     // This way all shots have the same receivers and sources
     for (uword ishot = 0; ishot < sources.n_rows; ++ishot) {
         shots.emplace_back(
-                fwiShot(sources.row(ishot), receivers, sourceFunction, samplingAmount, samplingTimestep, samplingTime,
-                        ishot, snapshotInterval));
+                fwiShot(sources.row(ishot), receivers, sourceFunction, samplingAmount, samplingTimestep, samplingTime, ishot, snapshotInterval,
+                        _sourceType));
     }
 
 }
+
 
 void fwiExperiment::forwardData() {
     for (uword iShot = 0; iShot < sources.n_rows; ++iShot) {
@@ -112,7 +140,6 @@ void fwiExperiment::mapKernels() {
     vpKernel_par2 = 2 * model.vp(model.interiorX, model.interiorZ) % lambdaKernel_par1 /
                     model.b_vx(model.interiorX, model.interiorZ);
 
-    // TODO validate next line, the vs * Klambda is a bit weird
     vsKernel_par2 =
             (2 * model.vs(model.interiorX, model.interiorZ) % muKernel_par1 - 4 * model.vs(model.interiorX, model.interiorZ) % lambdaKernel_par1) /
             model.b_vx(model.interiorX, model.interiorZ);
@@ -121,3 +148,5 @@ void fwiExperiment::mapKernels() {
 void fwiExperiment::update(mat _de, mat _vp, mat _vs) {
     model.updateInnerFieldsVelocity(_de, _vp, _vs);
 }
+
+
