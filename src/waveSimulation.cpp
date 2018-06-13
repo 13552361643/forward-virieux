@@ -52,17 +52,23 @@ int main() {
     fwiExperiment experiment(dx, dz, nx, nz, np, np_f, receivers, sources, sourcefunction, dt, nt, fwiShot::momentSource);
 
     // Loading material parameters
-    mat rho = 1500 * ones(experiment.model.nx_interior, experiment.model.nz_interior);
-    mat vp = 2000 * ones(experiment.model.nx_interior, experiment.model.nz_interior);
-    mat vs = 800 * ones(experiment.model.nx_interior, experiment.model.nz_interior);
+    mat rho;
+    mat c11;
+    mat c13;
+    mat c33;
+    mat c55;
 
-    vp(span(120, 125), span(100, 105)) -= 100;
-//    vs(span(120, 121), span(100, 101)) -= 100;
+    rho.load(experimentFolder + string("/M.txt"));
+    c11.load(experimentFolder + string("/C1111.txt"));
+    c13.load(experimentFolder + string("/C1122.txt"));
+    c33.load(experimentFolder + string("/C2222.txt"));
+    c55.load(experimentFolder + string("/C1212.txt"));
 
-    vp(span(280, 285), span(300, 305)) += 100;
-//    vs(span(280, 281), span(300, 301)) += 100;
+    std::cout <<  sqrt(max(max(c11))/ min(min(rho)));
 
-    experiment.update(rho, vp, vs);
+//    return EXIT_SUCCESS;
+
+    experiment.updateAnisotropicElasticity(rho.t(), c11.t(), c13.t(), c33.t(), c55.t());
 
     experiment.exportSnapshots = true;
 //    experiment.useRamSnapshots = true;
@@ -74,4 +80,5 @@ int main() {
 
     experiment.forwardData();
 
+    return EXIT_SUCCESS;
 }

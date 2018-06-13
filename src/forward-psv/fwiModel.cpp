@@ -49,6 +49,34 @@ void fwiModel::updateInnerFieldsElastic(mat &_density, mat &_lambda, mat &_mu) {
 
 }
 
+void fwiModel::updateInnerFieldsElastic(mat &_density, mat &_c11, mat &_c13, mat &_c33, mat &_c55) {
+
+    if (_density.n_rows != nx_interior or _density.n_cols != nz_interior
+        or _c13.n_rows != nx_interior or _c13.n_cols != nz_interior
+        or _c55.n_rows != nx_interior or _c55.n_cols != nz_interior
+        or _c11.n_rows != nx_interior or _c11.n_cols != nz_interior
+        or _c33.n_rows != nx_interior or _c33.n_cols != nz_interior) {
+        throw std::invalid_argument("Dimension of updated fields is not equal to domain.");
+    }
+
+    b_vx(interiorX, interiorZ) = 1.0 / _density;
+    extendFields(b_vx);
+    b_vz = b_vx;
+    de(interiorX, interiorZ) = _density;
+    extendFields(de);
+
+    c13(interiorX, interiorZ) = _c13;
+    c55(interiorX, interiorZ) = _c55;
+    c11(interiorX, interiorZ) = _c11;
+    c33(interiorX, interiorZ) = _c33;
+    
+    extendFields(c13);
+    extendFields(c55);
+    extendFields(c11);
+    extendFields(c33);
+    
+}
+
 void fwiModel::updateInnerFieldsVelocity(mat &_density, mat &_vp, mat &_vs) {
 
     if (_density.n_rows != nx_interior or _density.n_cols != nz_interior or _vp.n_rows != nx_interior or
@@ -122,13 +150,13 @@ void fwiModel::extendFields(mat &_outer) {
 }
 
 fwiModel::fwiModel() {
-    b_vx = arma::ones(nx, nz);
-    de = arma::ones(nx, nz);
-    b_vz = arma::ones(nx, nz);
-    c13 = arma::ones(nx, nz);
-    c55 = arma::ones(nx, nz);
-    c11 = arma::ones(nx, nz);
-    c33 = arma::ones(nx, nz);
+    b_vx = ones(nx, nz);
+    de = ones(nx, nz);
+    b_vz = ones(nx, nz);
+    c13 = ones(nx, nz);
+    c55 = ones(nx, nz);
+    c11 = ones(nx, nz);
+    c33 = ones(nx, nz);
 }
 
 void fwiModel::calculateVelocityFields() {

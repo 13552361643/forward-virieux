@@ -65,7 +65,9 @@ public:
 
     void computeKernel(); // compute all three medium parameter kernels
 
-    void update(arma::mat _de, arma::mat _vp, arma::mat _vs);
+    void updateIsotropicVelocity(arma::mat _de, arma::mat _vp, arma::mat _vs);
+
+    void updateAnisotropicElasticity(arma::mat de, arma::mat c11, arma::mat c13, arma::mat c33, arma::mat c55);
 
     void loadShots(std::string _string); // Load shots (from binary format) into observed data
 

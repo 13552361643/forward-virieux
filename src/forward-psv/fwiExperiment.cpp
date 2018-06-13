@@ -145,8 +145,11 @@ void fwiExperiment::mapKernels() {
             model.b_vx(model.interiorX, model.interiorZ);
 }
 
-void fwiExperiment::update(mat _de, mat _vp, mat _vs) {
+void fwiExperiment::updateIsotropicVelocity(mat _de, mat _vp, mat _vs) {
     model.updateInnerFieldsVelocity(_de, _vp, _vs);
 }
 
+void fwiExperiment::updateAnisotropicElasticity(mat de, mat c11, mat c13, mat c33, mat c55){
+    model.updateInnerFieldsElastic(de, c11, c13, c33, c55);
+}
 

@@ -49,6 +49,8 @@ public:
     // Public methods
     void updateInnerFieldsElastic(arma::mat &_density, arma::mat &_lambda, arma::mat &_mu);
 
+    void updateInnerFieldsElastic(arma::mat &_density, arma::mat &_c11, arma::mat &_c13, arma::mat &_c33, arma::mat &_c55);
+
     void updateInnerFieldsVelocity(arma::mat &_density, arma::mat &_vp, arma::mat &_vs);
 
     void setTimestepAuto(double _targetCourant);
