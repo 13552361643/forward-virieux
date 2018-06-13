@@ -21,6 +21,7 @@ void fwiModel::updateFields(mat &_density, mat &_lambda, mat &_mu) {
     c13 = _lambda;
     c55 = _mu;
     c11 = _lambda + 2 * _mu;
+    c33 = c11;
 }
 
 void fwiModel::updateInnerFieldsElastic(mat &_density, mat &_lambda, mat &_mu) {
@@ -131,17 +132,15 @@ fwiModel::fwiModel() {
 }
 
 void fwiModel::calculateVelocityFields() {
-    // TODO evaluate validity in staggered grid
     vp = sqrt((c13 + 2 * c55) % b_vx);
     vs = sqrt(c55 % b_vx);
 }
 
 void fwiModel::calculateElasticFields() {
-    // TODO evaluate validity in staggered grid
     c55 = square(vs) / b_vx;
     c11 = square(vp) / b_vx;
     c13 = c11 - 2 * c55;
-    c33 = 1.5 * c11;
+    c33 = c11;
 }
 
 double fwiModel::get_dt() {
@@ -160,7 +159,7 @@ double fwiModel::get_targetCourant() {
     return targetCourant;
 }
 
-fwiModel::fwiModel(double _dx, double _dz, arma::uword _nx_interior, arma::uword _nz_interior, arma::uword _np_boundary, double _np_factor) {
+fwiModel::fwiModel(double _dx, double _dz, uword _nx_interior, uword _nz_interior, uword _np_boundary, double _np_factor) {
     // Fields
     dx = _dx;
     dz = _dz;
@@ -172,17 +171,19 @@ fwiModel::fwiModel(double _dx, double _dz, arma::uword _nx_interior, arma::uword
     nz = nz_interior + np_boundary;
 
     // Static simulation fields
-    la = arma::mat(nx, nz);
-    mu = arma::mat(nx, nz);
-    lm = arma::mat(nx, nz);
-    b_vx = arma::mat(nx, nz);
-    de = arma::mat(nx, nz);
-    b_vz = arma::mat(nx, nz);
+    c11 = mat(nx, nz);
+    c13 = mat(nx, nz);
+    c33 = mat(nx, nz);
+    c55 = mat(nx, nz);
+    b_vx = mat(nx, nz);
+    de = mat(nx, nz);
+    b_vz = mat(nx, nz);
 
-    vp = arma::mat(nx, nz);
-    vs = arma::mat(nx, nz);
+    vp = mat(nx, nz);
+    vs = mat(nx, nz);
 
     // Interior of domain (excluding boundary layer)
-    interiorX = arma::span(np_boundary, np_boundary + nx_interior - 1);
-    interiorZ = arma::span(0, nz_interior - 1);
+    interiorX = span(np_boundary, np_boundary + nx_interior - 1);
+    interiorZ = span(0, nz_interior - 1);
 }
+

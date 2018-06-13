@@ -82,6 +82,7 @@ private:
     void mapKernels();
 
     bool useRamSnapshots = false;
+
 };
 
 

@@ -54,12 +54,12 @@ fwiExperiment::fwiExperiment(imat _receivers,
     // Check for positions
     for (auto &&yPosReceiver : receivers.col(1)) {
         if (yPosReceiver >= static_cast<int>(model.nz_interior)) {
-            throw std::invalid_argument("Invalid y position for receiver (in or beyond the Gaussian taper).");
+//            throw std::invalid_argument("Invalid y position for receiver (in or beyond the Gaussian taper).");
         }
     }
     for (auto &&yPosSource : sources.col(1)) {
         if (yPosSource >= static_cast<int>(model.nz_interior)) {
-            throw std::invalid_argument("Invalid y position for receiver (in or beyond the Gaussian taper).");
+//            throw std::invalid_argument("Invalid y position for receiver (in or beyond the Gaussian taper).");
         }
     }
 

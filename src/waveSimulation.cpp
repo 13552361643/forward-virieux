@@ -38,7 +38,7 @@ int main() {
     double dx = dimensions[1];
     uword nz = static_cast<uword>(dimensions[2]);
     double dz = dimensions[3];
-    uword np = static_cast<uword>(dimensions[4]); 
+    uword np = static_cast<uword>(dimensions[4]);
     double np_f = dimensions[5];
 
     // Create stf
